@@ -1,0 +1,61 @@
+import json
+import requests
+
+
+url1 = "https://chroniclingamerica.loc.gov/search/titles/results/"
+url2 = "https://chroniclingamerica.loc.gov/newspapers.json"
+
+
+#Print total newspaper
+query1string = {"format":"json"}
+response = requests.get(url1, params = query1string)
+data = response.json()
+print("Total number of newspapers is: " + str(data["totalItems"]))
+
+
+
+#Print State with most newspapers
+query2string = {"format":"json"}
+response = requests.get(url2, params = query2string)
+data2 = response.json()
+
+newspaperdict = {}
+
+for newspaper in data2["newspapers"]:
+    #print(newspaper["state"])
+    state = newspaper["state"]
+    if state in newspaperdict:
+        newspaperdict[state] += 1
+    else:
+        newspaperdict[state] = 1
+
+
+key_list = list(newspaperdict.keys())
+val_list = list(newspaperdict.values())
+
+
+#State with the most publications
+maxnum = max(newspaperdict.values())         
+print("The state with the most publications is " + str(key_list[val_list.index(maxnum)]) + ", with " + str(maxnum) + ".")
+
+    
+#State with least number of publication
+minnum = min(newspaperdict.values())
+print("The state with the least publications is " + str(key_list[val_list.index(minnum)]) + ", with " + str(minnum) + ".")
+
+
+#All newspaper publications for Colorado
+print( "Colorado has " + str(newspaperdict.get("Colorado")) + " total publications! Here's the first 20: ")
+
+
+#Print title, start year, and total issues available for the first 20 newspapers in Colorado
+items = data['items']
+newspapers = data2['newspapers']
+
+colorado_newspapers = [i for i in newspapers if i['state']=='Colorado']
+for i in range(20):
+    print("Title: ",colorado_newspapers[i]['title'])
+    ssn_url = colorado_newspapers[i]['url']
+    ssn_response = requests.get(ssn_url, params = query1string).json()
+    print("Number of Issues:", len(ssn_response['issues']))
+    print("Start Year: ", ssn_response['start_year'] )
